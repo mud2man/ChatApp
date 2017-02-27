@@ -8,6 +8,50 @@ public class Serial{
     Serial(){
     }
 
+    public String serialize(Payload payload){
+        String msg, typeStr, portStr, payloadMsg;
+        
+        msg = "";
+
+        //encoe type
+        typeStr = Integer.toString(payload.type);
+        msg += Integer.toString(typeStr.length());
+        msg += ".";
+        msg += typeStr;
+        
+        switch (payload.type){
+            case 0:
+                //encode nickName
+                msg += Integer.toString(payload.nickName.length());
+                msg += ".";
+                msg += payload.nickName;
+                
+                //encode ip
+                msg += Integer.toString(payload.ip.length());
+                msg += ".";
+                msg += payload.ip;
+                
+                //encode port
+                portStr = Integer.toString(payload.port);
+                msg += Integer.toString(portStr.length());
+                msg += ".";
+                msg += portStr;
+
+                break;
+            case 1:
+                //encode message
+                msg += Integer.toString(payload.msg.length());
+                msg += ".";
+                msg += payload.msg;
+                break;
+
+            default:
+                break;
+        }
+        System.out.println("[Serial] msg:" + msg);
+        return msg;
+    }
+
     public Payload deserialize(String msg){
         int len;
         String subStr;
@@ -51,7 +95,15 @@ public class Serial{
                 break;
 
             case 1:
+                //decode message
+                subStr = msg.substring(0, msg.indexOf('.'));
+                msg = msg.substring(msg.indexOf('.') + 1);
+                len = Integer.parseInt(subStr);
+                payload.msg = msg.substring(0, len);
+                msg = msg.substring(len);
+                System.out.println("[Serial] msg:" + payload.msg);
                 break;
+
             default:
                 break;
         }

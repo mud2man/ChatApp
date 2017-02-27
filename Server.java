@@ -5,37 +5,49 @@ import java.util.*;
 public class Server{
     int port;
     Table globalTbl;
+    DatagramSocket serverSocket;
 
-    public Server(int port){
+    public Server(int port) throws Exception{
         this.port = port;
         this.globalTbl = new Table();
+        serverSocket = new DatagramSocket(this.port);
 
         System.out.println("[Server] Hello Server, port:" + port);
     }
     
-    public void mainLoop() throws Exception {
-        DatagramSocket serverSocket;
-        DatagramPacket receivePacket, sendPacket;
-        InetAddress ipAddress;
+    public void send(String msg, InetAddress ipAddress, int port) throws Exception{
+        DatagramPacket sendPacket;
+        
+        ipAddress = InetAddress.getByName("localhost");
+        sendPacket = new DatagramPacket(msg.getBytes(), msg.getBytes().length, ipAddress, port);
+        serverSocket.send(sendPacket);
+    }
+    
+    public Payload receive() throws Exception{
+        String msg;
         byte[] receiveData;
-        byte[] sendData;
+        Payload payload;
+        DatagramPacket receivePacket;
         Serial serial;
+
+        serial = new Serial();
+        receiveData = new byte[1024];
+        receivePacket = new DatagramPacket(receiveData, receiveData.length);
+        serverSocket.receive(receivePacket);
+        msg = new String(receivePacket.getData());
+        System.out.println("[Server] msg: " + msg);
+        payload = serial.deserialize(msg);
+
+        return payload;
+    }
+    
+    public void mainLoop() throws Exception {
+        InetAddress ipAddress;
         Payload payload;
         String msg;
 
-        serverSocket = new DatagramSocket(port);
-        receiveData = new byte[1024];
-        sendData = new byte[1024];
-        serial = new Serial();
-
-
         while(true){
-            receivePacket = new DatagramPacket(receiveData, receiveData.length);
-            serverSocket.receive(receivePacket);
-            msg = new String(receivePacket.getData());
-            System.out.println("[Server] " + msg);
-
-            payload = serial.deserialize(msg);
+            payload = receive();
             System.out.println("[Server] type:" + payload.type);
 
             switch (payload.type){
@@ -44,14 +56,15 @@ public class Server{
                     System.out.println("[Server] ip:" + payload.ip);
                     System.out.println("[Server] port:" + payload.port);
                     globalTbl.insert(payload.nickName, payload.ip, payload.port);
+                    globalTbl.onLine(payload.nickName);
                     globalTbl.dumpTable();
 
                     //send ack to client
                     msg = "";
                     msg += "1.1";
+                    msg += "30.[Welcome, You are registered.]";
                     ipAddress = InetAddress.getByName(payload.ip);
-                    sendPacket = new DatagramPacket(msg.getBytes(), msg.getBytes().length, ipAddress, payload.port);
-                    serverSocket.send(sendPacket);
+                    send(msg, ipAddress, payload.port);
                     break;
 
                 case 1:
