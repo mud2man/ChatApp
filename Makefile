@@ -63,7 +63,6 @@ $(MAIN): $(SRCS)
 
 clean:
 	$(RM) *.class *~ $(MAIN)
-	$(RM) -r *$(MAIN)** 
 
 depend: $(SRCS)
 	makedepend $(INCLUDES) $^ 
