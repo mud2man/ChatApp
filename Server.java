@@ -6,8 +6,6 @@ public class Server{
     int port;
     Table globalTbl;
     DatagramSocket serverSocket;
-    // 0:
-    int state;
 
     public Server(int port) throws Exception{
         this.port = port;
@@ -20,7 +18,6 @@ public class Server{
     public void send(String msg, InetAddress ipAddress, int port) throws Exception{
         DatagramPacket sendPacket;
         
-        ipAddress = InetAddress.getByName("localhost");
         sendPacket = new DatagramPacket(msg.getBytes(), msg.getBytes().length, ipAddress, port);
         serverSocket.send(sendPacket);
     }
@@ -37,7 +34,7 @@ public class Server{
         receivePacket = new DatagramPacket(receiveData, receiveData.length);
         serverSocket.receive(receivePacket);
         msg = new String(receivePacket.getData());
-        System.out.println("[Server] msg: " + msg);
+        System.out.println("[Server] msg:" + msg);
         payload = serial.deserialize(msg);
 
         return payload;
@@ -53,18 +50,56 @@ public class Server{
 
         serial = new Serial();
         tbl = globalTbl.tbl;
-
+    retry:
         for(Map.Entry<String, ClientInfo> client: tbl.entrySet()) {
             clientInfo = client.getValue();
             ipAddress = InetAddress.getByName(clientInfo.clientIp);
-            
+           
+            //start update table
             sendPayload = new Payload();
             sendPayload.type = 3;
             sendPayload.msg = "[Start update table.]";
             msg = serial.serialize(sendPayload);
-            ipAddress = InetAddress.getByName(recPayload.ip);
-            send(msg, ipAddress, recPayload.port);
-             
+            ipAddress = InetAddress.getByName(clientInfo.clientIp);
+            send(msg, ipAddress, clientInfo.clientPort);
+                
+            //wait for ack from client
+            recPayload = receive();
+            System.out.println("[Server] receive ack of start");
+            if(recPayload.type != 2){
+                continue retry;
+            }
+
+            for(Map.Entry<String, ClientInfo> entry: tbl.entrySet()) {
+                //send table entry to client
+                sendPayload = new Payload();
+                sendPayload.type = 0;
+                sendPayload.nickName = entry.getKey();
+                sendPayload.ip = entry.getValue().clientIp;
+                sendPayload.port = entry.getValue().clientPort;
+                msg = serial.serialize(sendPayload);
+                send(msg, ipAddress, clientInfo.clientPort);
+         
+                //wait for ack from client
+                recPayload = receive();
+                System.out.println("[Server] receive ack of add");
+                if(recPayload.type != 2){
+                    continue retry;
+                }
+            }
+            
+            //finish table update
+            sendPayload = new Payload();
+            sendPayload.type = 4;
+            msg = serial.serialize(sendPayload);
+            send(msg, ipAddress, clientInfo.clientPort);
+            
+            //wait for ack from client
+            recPayload = receive();
+            System.out.println("[Server] receive ack of finish");
+            if(recPayload.type != 2){
+                continue retry;
+            }
         }
     }
     
@@ -86,8 +121,8 @@ public class Server{
                     System.out.println("[Server] nickName:" + recPayload.nickName);
                     System.out.println("[Server] ip:" + recPayload.ip);
                     System.out.println("[Server] port:" + recPayload.port);
+                    System.out.println("[Server] isOnline:" + recPayload.isOnline);
                     globalTbl.insert(recPayload.nickName, recPayload.ip, recPayload.port);
-                    globalTbl.onLine(recPayload.nickName);
                     globalTbl.dumpTable();
 
                     //send ack to client

@@ -2,7 +2,6 @@ import java.io.*;
 import java.net.*;
 import java.util.*;
 
-
 public class Client{
     String nickName;
     String serverIp;
@@ -10,38 +9,6 @@ public class Client{
     int clientPort;
     Table localTbl;
     DatagramSocket clientSocket;
-
-    private class ReceiveThread implements Runnable {
-        private Thread t;
-        private String threadName;
-       
-        ReceiveThread(String name){
-            threadName = name;
-            System.out.println("[Client] Creating thread:" +  threadName);
-        }
-       
-        public void run() {
-            System.out.println("Running " +  threadName );
-            try {
-                for(;;) {
-                    System.out.println("[Client] Thread: " + threadName);
-                    // Let the thread sleep for a while.
-                    Thread.sleep(1000);
-                }
-            }catch (InterruptedException e) {
-                System.out.println("[Client] Thread " +  threadName + " interrupted.");
-            }
-            System.out.println("[Client] Thread " +  threadName + " exiting.");
-        }
-       
-        public void start () {
-            System.out.println("[Client] Starting " +  threadName );
-            if (t == null) {
-                t = new Thread (this, threadName);
-                t.start ();
-            } 
-        }
-    }
 
     public Client(String nickName, String serverIp, int serverPort, int clientPort) throws Exception{
         this.nickName = nickName;
@@ -57,10 +24,102 @@ public class Client{
         System.out.println("[Client] clientPort:" + this.clientPort);
     }
     
+    private class ReceiveThread implements Runnable {
+        private Thread thread;
+        private String threadName;
+       
+        ReceiveThread(String name){
+            threadName = name;
+            thread = new Thread (this, threadName);
+        }
+       
+        public void run() {
+            InetAddress ipAddress;
+            Payload recPayload, sendPayload;
+            String msg;
+            Serial serial;
+
+            System.out.println("[Client] Running " +  threadName + " on port:"+ serverPort);
+            serial = new Serial();
+            recPayload = null;
+
+            while(true){
+                try{
+                    System.out.println("[Client] wait for packet...");
+                    recPayload = receive();
+                }
+                catch(Exception e){
+                }
+                
+                switch (recPayload.type){
+                    case 0:
+                        //add table entry
+                        System.out.println("[Client] nickName:" + recPayload.nickName);
+                        System.out.println("[Client] ip:" + recPayload.ip);
+                        System.out.println("[Client] port:" + recPayload.port);
+                        localTbl.insert(recPayload.nickName, recPayload.ip, recPayload.port);
+                        localTbl.onLine(recPayload.nickName);
+                        localTbl.dumpTable();
+
+                        //send ack to server
+                        sendPayload = new Payload();
+                        sendPayload.type = 2;
+                        sendPayload.nickName = nickName;
+                        msg = serial.serialize(sendPayload);
+                        try{
+                            ipAddress = InetAddress.getByName(serverIp);
+                            send(msg, ipAddress, serverPort);
+                        }
+                        catch(Exception e){
+                        }
+                        break;
+
+                    case 3:
+                    	//reset local table
+        				localTbl = new Table();
+
+                        //send ack to server
+            			sendPayload = new Payload();
+            			sendPayload.type = 2;
+            			sendPayload.nickName = nickName;
+            			msg = serial.serialize(sendPayload);
+                        try{
+                    	    ipAddress = InetAddress.getByName(serverIp);
+            			    send(msg, ipAddress, serverPort);
+                        }
+                        catch(Exception e){
+                        }
+                        System.out.println("[Client] start update table...");
+                        break;
+                    case 4:
+                        //TODO add table unlock
+                        //send ack to server
+            			sendPayload = new Payload();
+            			sendPayload.type = 2;
+            			sendPayload.nickName = nickName;
+            			msg = serial.serialize(sendPayload);
+                        try{
+                    	    ipAddress = InetAddress.getByName(serverIp);
+            			    send(msg, ipAddress, serverPort);
+                        }
+                        catch(Exception e){
+                        }
+                        System.out.println("[Client] finish update table...");
+                        break;
+                    case 7:
+                        break;
+                }
+            }
+        }
+       
+        public void start () {
+            thread.start ();
+        }
+    }
+
     public void send(String msg, InetAddress ipAddress, int port) throws Exception{
         DatagramPacket sendPacket;
         
-        ipAddress = InetAddress.getByName("localhost");
         sendPacket = new DatagramPacket(msg.getBytes(), msg.getBytes().length, ipAddress, port);
         clientSocket.send(sendPacket);
     }
@@ -91,17 +150,17 @@ public class Client{
         
         serial = new Serial();
         msg = "";
-        ipAddress = InetAddress.getByName("localhost");
+        ipAddress = InetAddress.getByName(this.serverIp);
 
         do{
+            //send register information to server
             payload = new Payload();
             payload.type = 0;
-            payload.nickName = "namo";
+            payload.nickName = this.nickName;
             payload.ip = ipAddress.getHostAddress();
             payload.port = this.clientPort;
+            payload.isOnline = 1;
             msg = serial.serialize(payload);
-            
-            //send register information to server
             send(msg, ipAddress, this.serverPort);
          
             //wait for ack from server
@@ -112,10 +171,11 @@ public class Client{
     }
 
     public void mainLoop() throws Exception{
+        ReceiveThread receiveThread;
         System.out.println("[Client] Hello client mainLoop");
 
         register();
-        ReceiveThread receiveThread = new ReceiveThread("Receive Thread-1");
+        receiveThread = new ReceiveThread("Receive thread");
         receiveThread.start();
     }
 }

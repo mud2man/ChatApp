@@ -3,9 +3,9 @@ import java.util.*;
 class ClientInfo{
     String clientIp;
     int clientPort;
-    boolean isOnline;
+    int isOnline;
 
-    ClientInfo(String ip, int port, boolean i){
+    ClientInfo(String ip, int port, int i){
         clientIp = ip;
         clientPort = port;
         isOnline = i;
@@ -36,7 +36,7 @@ public class Table{
     public void insert(String nickName, String ip, int port){
         ClientInfo ci;
 
-        ci = new ClientInfo(ip, port, false);
+        ci = new ClientInfo(ip, port, 0);
         if(!tbl.containsKey(nickName)){
             tbl.put(nickName, ci);
         }
@@ -53,13 +53,13 @@ public class Table{
         ClientInfo ci;
         
         ci = tbl.get(nickName);
-        ci.isOnline = true;
+        ci.isOnline = 1;
     }
     
     public void offLine(String nickName){
         ClientInfo ci;
         
         ci = tbl.get(nickName);
-        ci.isOnline = false;
+        ci.isOnline = 0;
     }
 }

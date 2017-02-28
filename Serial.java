@@ -9,7 +9,7 @@ public class Serial{
     }
 
     public String serialize(Payload payload){
-        String msg, typeStr, portStr, payloadMsg;
+        String msg, typeStr, portStr, payloadMsg, isOnlineStr;
         
         msg = "";
 
@@ -37,6 +37,11 @@ public class Serial{
                 msg += ".";
                 msg += portStr;
 
+                //encode isOnline
+                isOnlineStr = Integer.toString(payload.isOnline);
+                msg += Integer.toString(isOnlineStr.length());
+                msg += ".";
+                msg += isOnlineStr;
                 break;
             case 1:
                 //encode message
@@ -88,10 +93,19 @@ public class Serial{
                 len = Integer.parseInt(subStr);
                 subStr = msg.substring(0, len);
                 payload.port = Integer.parseInt(subStr);
+                msg = msg.substring(len);
+
+                //decode isOnline
+                subStr = msg.substring(0, msg.indexOf('.'));
+                msg = msg.substring(msg.indexOf('.') + 1);
+                len = Integer.parseInt(subStr);
+                subStr = msg.substring(0, len);
+                payload.isOnline = Integer.parseInt(subStr);
 
                 System.out.println("[Serial] nickName:" + payload.nickName);
                 System.out.println("[Serial] ip:" + payload.ip);
                 System.out.println("[Serial] port:" + payload.port);
+                System.out.println("[Serial] isOnline:" + payload.isOnline);
                 break;
 
             case 1:
