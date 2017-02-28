@@ -1,19 +1,19 @@
 import java.util.*;
 
-public class Table{
-    HashMap<String, ClientInfo> tbl;
+class ClientInfo{
+    String clientIp;
+    int clientPort;
+    boolean isOnline;
 
-    private class ClientInfo{
-        String clientIp;
-        int clientPort;
-        boolean isOnline;
-
-        ClientInfo(String ip, int port, boolean i){
-            clientIp = ip;
-            clientPort = port;
-            isOnline = i;
-        }
+    ClientInfo(String ip, int port, boolean i){
+        clientIp = ip;
+        clientPort = port;
+        isOnline = i;
     }
+}
+
+public class Table{
+    public HashMap<String, ClientInfo> tbl;
 
     public Table(){
         tbl = new HashMap<String, ClientInfo>();
