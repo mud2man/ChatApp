@@ -75,17 +75,17 @@ public class Client{
                         break;
 
                     case 3:
-                    	//reset local table
-        				localTbl = new Table();
+                        //reset local table
+                        localTbl = new Table();
 
                         //send ack to server
-            			sendPayload = new Payload();
-            			sendPayload.type = 2;
-            			sendPayload.nickName = nickName;
-            			msg = serial.serialize(sendPayload);
+                        sendPayload = new Payload();
+                        sendPayload.type = 2;
+                        sendPayload.nickName = nickName;
+                        msg = serial.serialize(sendPayload);
                         try{
-                    	    ipAddress = InetAddress.getByName(serverIp);
-            			    send(msg, ipAddress, serverPort);
+                            ipAddress = InetAddress.getByName(serverIp);
+                            send(msg, ipAddress, serverPort);
                         }
                         catch(Exception e){
                         }
@@ -94,13 +94,13 @@ public class Client{
                     case 4:
                         //TODO add table unlock
                         //send ack to server
-            			sendPayload = new Payload();
-            			sendPayload.type = 2;
-            			sendPayload.nickName = nickName;
-            			msg = serial.serialize(sendPayload);
+                        sendPayload = new Payload();
+                        sendPayload.type = 2;
+                        sendPayload.nickName = nickName;
+                        msg = serial.serialize(sendPayload);
                         try{
-                    	    ipAddress = InetAddress.getByName(serverIp);
-            			    send(msg, ipAddress, serverPort);
+                            ipAddress = InetAddress.getByName(serverIp);
+                            send(msg, ipAddress, serverPort);
                         }
                         catch(Exception e){
                         }
@@ -169,22 +169,49 @@ public class Client{
             System.out.println(">>> " + payload.msg);
         }while(payload.type != 1);
     }
+    
+    public void chat(String nickName, String msg) throws Exception{
+        InetAddress ipAddress;
+
+        if(!socalTbl.contains(nickName)){
+            System.err.println(">>> nickName:" + nickName + " not existed!!!");
+        }
+    }
 
     public void mainLoop() throws Exception{
         ReceiveThread receiveThread;
         BufferedReader br;
-        String command; 
+        String command, strLine, msg, nickName; 
 
         register();
         receiveThread = new ReceiveThread("Receive thread");
         receiveThread.start();
+        Thread.sleep(100); 
         
         while(true){
             br = new BufferedReader(new InputStreamReader(System.in));
-            Thread.sleep(100); 
             System.out.print(">>> ");
-            command = br.readLine();
-            System.out.println(command);
+            strLine = br.readLine();
+
+            if(strLine.indexOf(' ') == -1){
+                System.err.println("Wrong format !!!");
+                continue; 
+            }
+
+            command = strLine.substring(0, strLine.indexOf(' '));
+            strLine = strLine.substring(strLine.indexOf(' ') + 1);
+            
+            if(command.compareTo("send") == 0){
+                nickName = strLine.substring(0, strLine.indexOf(' '));
+                msg = strLine.substring(strLine.indexOf(' ') + 1);
+                chat(nickName, msg);
+            }
+            else if(command.compareTo("dereg") == 0){
+                System.out.println("[Client] dereg " + strLine);
+            }
+            else{
+                System.err.println("Wrong format !!!");
+            }
         }
     }
 }
