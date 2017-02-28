@@ -54,6 +54,10 @@ public class Server{
         for(Map.Entry<String, ClientInfo> client: tbl.entrySet()) {
             clientInfo = client.getValue();
             ipAddress = InetAddress.getByName(clientInfo.clientIp);
+
+            if(clientInfo.isOnline == 0){
+                continue;
+            }
            
             //start update table
             sendPayload = new Payload();
@@ -77,6 +81,7 @@ public class Server{
                 sendPayload.nickName = entry.getKey();
                 sendPayload.ip = entry.getValue().clientIp;
                 sendPayload.port = entry.getValue().clientPort;
+                sendPayload.isOnline = entry.getValue().isOnline;
                 msg = serial.serialize(sendPayload);
                 send(msg, ipAddress, clientInfo.clientPort);
          
@@ -122,7 +127,7 @@ public class Server{
                     System.out.println("[Server] ip:" + recPayload.ip);
                     System.out.println("[Server] port:" + recPayload.port);
                     System.out.println("[Server] isOnline:" + recPayload.isOnline);
-                    globalTbl.insert(recPayload.nickName, recPayload.ip, recPayload.port);
+                    globalTbl.insert(recPayload.nickName, recPayload.ip, recPayload.port, recPayload.isOnline);
                     globalTbl.dumpTable();
 
                     //send ack to client

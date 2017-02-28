@@ -33,10 +33,10 @@ public class Table{
 
     }
 
-    public void insert(String nickName, String ip, int port){
+    public void insert(String nickName, String ip, int port, int isOnline){
         ClientInfo ci;
 
-        ci = new ClientInfo(ip, port, 0);
+        ci = new ClientInfo(ip, port, isOnline);
         if(!tbl.containsKey(nickName)){
             tbl.put(nickName, ci);
         }

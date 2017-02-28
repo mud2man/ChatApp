@@ -57,8 +57,8 @@ public class Client{
                         System.out.println("[Client] nickName:" + recPayload.nickName);
                         System.out.println("[Client] ip:" + recPayload.ip);
                         System.out.println("[Client] port:" + recPayload.port);
-                        localTbl.insert(recPayload.nickName, recPayload.ip, recPayload.port);
-                        localTbl.onLine(recPayload.nickName);
+                        System.out.println("[Client] isOnline:" + recPayload.isOnline);
+                        localTbl.insert(recPayload.nickName, recPayload.ip, recPayload.port, recPayload.isOnline);
                         localTbl.dumpTable();
 
                         //send ack to server
@@ -104,7 +104,7 @@ public class Client{
                         }
                         catch(Exception e){
                         }
-                        System.out.println("[Client] finish update table...");
+                        System.out.println(">>> [Client table updated.]");
                         break;
                     case 7:
                         break;
@@ -172,10 +172,19 @@ public class Client{
 
     public void mainLoop() throws Exception{
         ReceiveThread receiveThread;
-        System.out.println("[Client] Hello client mainLoop");
+        BufferedReader br;
+        String command; 
 
         register();
         receiveThread = new ReceiveThread("Receive thread");
         receiveThread.start();
+        
+        while(true){
+            br = new BufferedReader(new InputStreamReader(System.in));
+            Thread.sleep(100); 
+            System.out.print(">>> ");
+            command = br.readLine();
+            System.out.println(command);
+        }
     }
 }
