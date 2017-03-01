@@ -55,6 +55,7 @@ public class Client{
                     e.printStackTrace();  
                 }
                 
+                System.out.println("type:" + recPayload.type);
                 switch (recPayload.type){
                     case 0:
                         //add table entry
@@ -79,13 +80,33 @@ public class Client{
                         }
                         break;
                     
-                    case 2:
+                    case 1:
                         //wake up waiting thread
-                        System.out.println("[Client] ack receive, waken...");
-                        synchronized(thread){
-                            thread.notifyAll();
+                        try{
+                            Thread.sleep(10);
+                            synchronized(thread){
+                                System.out.println("[Client] ack receive from server, waken...");
+                                thread.notifyAll();
+                            }
+                        }
+                        catch(Exception e){
+                            e.printStackTrace();  
                         }
                         break;     
+
+                    case 2:
+                        //wake up waiting thread
+                        try{
+                            Thread.sleep(10);
+                            synchronized(thread){
+                                System.out.println("[Client] ack receive from client, waken...");
+                                thread.notifyAll();
+                            }
+                        }
+                        catch(Exception e){
+                            e.printStackTrace();  
+                        }
+                        break;
 
                     case 3:
                         //reset local table
@@ -223,6 +244,7 @@ public class Client{
 
         if(!tbl.containsKey(nickName)){
             System.err.println(">>> nickName:" + nickName + " not existed!!!");
+            return;
         }
         
         //send message to client
@@ -244,6 +266,44 @@ public class Client{
         if((System.currentTimeMillis() - beforeTime) >= 500){ 
             System.out.println(">>> [No ACK from " + nickName + ", message sent to server.]");
         }
+    }
+    
+    public void deRegister(String nickName) throws Exception{
+        InetAddress ipAddress;
+        Payload payload;
+        Serial serial;
+        String msg;
+        long beforeTime;
+        
+        //send message to client
+        ipAddress = InetAddress.getByName("localhost");
+        serial = new Serial();
+        payload = new Payload();
+        payload.type = 8;
+        payload.nickName = this.nickName;
+        payload.ip = ipAddress.getHostAddress();
+        payload.port = this.clientPort;
+        msg = serial.serialize(payload);
+        ipAddress = InetAddress.getByName(this.serverIp);
+       
+        for(int retry = 1; retry < 6; retry++){
+            beforeTime = System.currentTimeMillis();
+            send(msg, ipAddress, this.serverPort);
+         
+            //wait for ack from server
+            synchronized(thread){
+                thread.wait(500);
+            } 
+
+            if((System.currentTimeMillis() - beforeTime) >= 500){ 
+                System.out.println("[Client] server response tiomeout on " + retry + "-th time");
+            }
+            else{
+                return ;
+            }
+        }
+        System.out.println(">>> [Server not responding]");
+        System.out.println(">>> [Exiting]");
     }
 
     public void mainLoop() throws Exception{
@@ -275,7 +335,8 @@ public class Client{
                 chat(nickName, msg);
             }
             else if(command.compareTo("dereg") == 0){
-                System.out.println("[Client] dereg " + strLine);
+                nickName = strLine;
+                deRegister(nickName);
             }
             else{
                 System.err.println("Wrong format !!!");

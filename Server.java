@@ -137,14 +137,33 @@ public class Server{
                     sendPayload.msg = "[Welcome, You are registered.]";
                     msg = serial.serialize(sendPayload);
                     ipAddress = InetAddress.getByName(recPayload.ip);
+                    System.out.println("ipAddress:" + ipAddress + ", recPayload.port: " + recPayload.port);
                     send(msg, ipAddress, recPayload.port);
                     
                     //broadcast updated table 
                     broadcastTable();
                     break;
 
-                case 1:
+                //de-register
+                case 8:
+                    System.out.println("[Server] nickName:" + recPayload.nickName);
+                    System.out.println("[Server] ip:" + recPayload.ip);
+                    System.out.println("[Server] port:" + recPayload.port);
+                    globalTbl.offLine(recPayload.nickName);
+                    
+                    //send ack to client
+                    sendPayload = new Payload();
+                    sendPayload.type = 1;
+                    sendPayload.msg = "[You are Offline. Bye.]";
+                    msg = serial.serialize(sendPayload);
+                    ipAddress = InetAddress.getByName(recPayload.ip);
+                    System.out.println("ipAddress:" + ipAddress + ", recPayload.port: " + recPayload.port);
+                    send(msg, ipAddress, recPayload.port);
+
+                    //broadcast updated table 
+                    //broadcastTable();
                     break;
+
                 default:
                     break;
             }

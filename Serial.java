@@ -62,6 +62,24 @@ public class Serial{
                 msg += payload.msg;
                 break;
             
+            case 8:
+                //encode nickName
+                msg += Integer.toString(payload.nickName.length());
+                msg += ".";
+                msg += payload.nickName;
+                
+                //encode ip
+                msg += Integer.toString(payload.ip.length());
+                msg += ".";
+                msg += payload.ip;
+                
+                //encode port
+                portStr = Integer.toString(payload.port);
+                msg += Integer.toString(portStr.length());
+                msg += ".";
+                msg += portStr;
+                break;
+            
             default:
                 break;
         }
@@ -149,6 +167,35 @@ public class Serial{
                 System.out.println("[Serial] nickName:" + payload.nickName);
                 System.out.println("[Serial] msg:" + payload.msg);
                 break;
+            
+            case 8:
+                //decode nickName
+                subStr = msg.substring(0, msg.indexOf('.'));
+                msg = msg.substring(msg.indexOf('.') + 1);
+                len = Integer.parseInt(subStr);
+                payload.nickName = msg.substring(0, len);
+                msg = msg.substring(len);
+                
+                //decode ip
+                subStr = msg.substring(0, msg.indexOf('.'));
+                msg = msg.substring(msg.indexOf('.') + 1);
+                len = Integer.parseInt(subStr);
+                payload.ip = msg.substring(0, len);
+                msg = msg.substring(len);
+
+                //decode port
+                subStr = msg.substring(0, msg.indexOf('.'));
+                msg = msg.substring(msg.indexOf('.') + 1);
+                len = Integer.parseInt(subStr);
+                subStr = msg.substring(0, len);
+                payload.port = Integer.parseInt(subStr);
+                msg = msg.substring(len);
+
+                System.out.println("[Serial] nickName:" + payload.nickName);
+                System.out.println("[Serial] ip:" + payload.ip);
+                System.out.println("[Serial] port:" + payload.port);
+                break;
+
             default:
                 break;
         }
