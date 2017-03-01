@@ -33,7 +33,7 @@ public class Table{
 
     }
 
-    public void insert(String nickName, String ip, int port, int isOnline){
+    public synchronized void insert(String nickName, String ip, int port, int isOnline){
         ClientInfo ci;
 
         ci = new ClientInfo(ip, port, isOnline);
@@ -41,22 +41,25 @@ public class Table{
             tbl.put(nickName, ci);
         }
         else{
-            System.err.println("nickName:" + nickName + "already existed, insert fail!!!!!");
+            ci = tbl.get(nickName);
+            ci.clientIp = ip;
+            ci.clientPort = port;
+            ci.isOnline = isOnline;
         }
     }
     
-    public void delete(String nickName){
+    public synchronized void delete(String nickName){
         tbl.remove(nickName);
     }
     
-    public void onLine(String nickName){
+    public synchronized void onLine(String nickName){
         ClientInfo ci;
         
         ci = tbl.get(nickName);
         ci.isOnline = 1;
     }
     
-    public void offLine(String nickName){
+    public synchronized void offLine(String nickName){
         ClientInfo ci;
         
         ci = tbl.get(nickName);

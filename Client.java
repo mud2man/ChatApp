@@ -52,6 +52,7 @@ public class Client{
                     recPayload = receive();
                 }
                 catch(Exception e){
+                    e.printStackTrace();  
                 }
                 
                 switch (recPayload.type){
@@ -80,8 +81,9 @@ public class Client{
                     
                     case 2:
                         //wake up waiting thread
+                        System.out.println("[Client] ack receive, waken...");
                         synchronized(thread){
-                            thread.notify();
+                            thread.notifyAll();
                         }
                         break;     
 
@@ -136,7 +138,6 @@ public class Client{
                             try{
                                 ipAddress = InetAddress.getByName(tbl.get(recPayload.nickName).clientIp);
                                 send(msg, ipAddress, tbl.get(recPayload.nickName).clientPort);
-                                //thread.wait();
                             }
                             catch(Exception e){
                                 e.printStackTrace();  
@@ -216,6 +217,7 @@ public class Client{
         Payload payload;
         Serial serial;
         HashMap<String, ClientInfo> tbl;
+        long beforeTime;
 
         tbl = localTbl.tbl;
 
@@ -234,9 +236,14 @@ public class Client{
         send(msg, ipAddress, tbl.get(nickName).clientPort);
         
         //wait for ack from client
+        beforeTime = System.currentTimeMillis();
         synchronized(thread){
-            thread.wait();
-        }      
+            thread.wait(500);
+        } 
+
+        if((System.currentTimeMillis() - beforeTime) > 500){ 
+            System.out.println("[Client] wait timeout");
+        }
     }
 
     public void mainLoop() throws Exception{
