@@ -241,8 +241,8 @@ public class Client{
             thread.wait(500);
         } 
 
-        if((System.currentTimeMillis() - beforeTime) > 500){ 
-            System.out.println("[Client] wait timeout");
+        if((System.currentTimeMillis() - beforeTime) >= 500){ 
+            System.out.println(">>> [No ACK from " + nickName + ", message sent to server.]");
         }
     }
 
