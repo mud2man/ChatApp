@@ -148,6 +148,7 @@ public class Serial{
                 
                 System.out.println("[Serial] nickName:" + payload.nickName);
                 System.out.println("[Serial] msg:" + payload.msg);
+                break;
             default:
                 break;
         }
