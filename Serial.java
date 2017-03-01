@@ -50,6 +50,18 @@ public class Serial{
                 msg += payload.msg;
                 break;
 
+            case 7:
+                //encode nickName
+                msg += Integer.toString(payload.nickName.length());
+                msg += ".";
+                msg += payload.nickName;
+
+                //encode message
+                msg += Integer.toString(payload.msg.length());
+                msg += ".";
+                msg += payload.msg;
+                break;
+            
             default:
                 break;
         }
@@ -115,9 +127,27 @@ public class Serial{
                 len = Integer.parseInt(subStr);
                 payload.msg = msg.substring(0, len);
                 msg = msg.substring(len);
+                
                 System.out.println("[Serial] msg:" + payload.msg);
                 break;
+            
+            case 7:
+                //decode nickName
+                subStr = msg.substring(0, msg.indexOf('.'));
+                msg = msg.substring(msg.indexOf('.') + 1);
+                len = Integer.parseInt(subStr);
+                payload.nickName = msg.substring(0, len);
+                msg = msg.substring(len);
 
+                //decode message
+                subStr = msg.substring(0, msg.indexOf('.'));
+                msg = msg.substring(msg.indexOf('.') + 1);
+                len = Integer.parseInt(subStr);
+                payload.msg = msg.substring(0, len);
+                msg = msg.substring(len);
+                
+                System.out.println("[Serial] nickName:" + payload.nickName);
+                System.out.println("[Serial] msg:" + payload.msg);
             default:
                 break;
         }

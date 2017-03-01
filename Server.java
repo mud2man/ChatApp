@@ -65,6 +65,7 @@ public class Server{
             sendPayload.msg = "[Start update table.]";
             msg = serial.serialize(sendPayload);
             ipAddress = InetAddress.getByName(clientInfo.clientIp);
+            System.out.println("[Server] start updating table");
             send(msg, ipAddress, clientInfo.clientPort);
                 
             //wait for ack from client

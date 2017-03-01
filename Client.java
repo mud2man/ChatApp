@@ -9,6 +9,7 @@ public class Client{
     int clientPort;
     Table localTbl;
     DatagramSocket clientSocket;
+    private Thread thread;
 
     public Client(String nickName, String serverIp, int serverPort, int clientPort) throws Exception{
         this.nickName = nickName;
@@ -25,7 +26,6 @@ public class Client{
     }
     
     private class ReceiveThread implements Runnable {
-        private Thread thread;
         private String threadName;
        
         ReceiveThread(String name){
@@ -38,6 +38,9 @@ public class Client{
             Payload recPayload, sendPayload;
             String msg;
             Serial serial;
+            HashMap<String, ClientInfo> tbl;
+            String ip;
+
 
             System.out.println("[Client] Running " +  threadName + " on port:"+ serverPort);
             serial = new Serial();
@@ -71,8 +74,16 @@ public class Client{
                             send(msg, ipAddress, serverPort);
                         }
                         catch(Exception e){
+                            e.printStackTrace();  
                         }
                         break;
+                    
+                    case 2:
+                        //wake up waiting thread
+                        synchronized(thread){
+                            thread.notify();
+                        }
+                        break;     
 
                     case 3:
                         //reset local table
@@ -88,9 +99,11 @@ public class Client{
                             send(msg, ipAddress, serverPort);
                         }
                         catch(Exception e){
+                            e.printStackTrace();  
                         }
                         System.out.println("[Client] start update table...");
                         break;
+
                     case 4:
                         //TODO add table unlock
                         //send ack to server
@@ -103,10 +116,35 @@ public class Client{
                             send(msg, ipAddress, serverPort);
                         }
                         catch(Exception e){
+                            e.printStackTrace();  
                         }
                         System.out.println(">>> [Client table updated.]");
                         break;
+
                     case 7:
+                        System.out.println(recPayload.nickName + ": " + recPayload.msg);
+                        System.out.print(">>> " );
+                        
+                        //send ack to client
+                        sendPayload = new Payload();
+                        sendPayload.type = 2;
+                        sendPayload.nickName = nickName;
+                        msg = serial.serialize(sendPayload);
+                        tbl = localTbl.tbl;
+
+                        synchronized(thread){
+                            try{
+                                ipAddress = InetAddress.getByName(tbl.get(recPayload.nickName).clientIp);
+                                send(msg, ipAddress, tbl.get(recPayload.nickName).clientPort);
+                                //thread.wait();
+                            }
+                            catch(Exception e){
+                                e.printStackTrace();  
+                            }
+                        }
+                        break;
+
+                    default:
                         break;
                 }
             }
@@ -161,9 +199,12 @@ public class Client{
             payload.port = this.clientPort;
             payload.isOnline = 1;
             msg = serial.serialize(payload);
+            System.out.println("[Client] register before send:");
             send(msg, ipAddress, this.serverPort);
+            System.out.println("[Client] register after send:");
          
             //wait for ack from server
+            System.out.println("[Client] register before receive:");
             payload = receive();
             System.out.println("[Client] payload.type:" + payload.type);
             System.out.println(">>> " + payload.msg);
@@ -172,10 +213,30 @@ public class Client{
     
     public void chat(String nickName, String msg) throws Exception{
         InetAddress ipAddress;
+        Payload payload;
+        Serial serial;
+        HashMap<String, ClientInfo> tbl;
 
-        if(!socalTbl.contains(nickName)){
+        tbl = localTbl.tbl;
+
+        if(!tbl.containsKey(nickName)){
             System.err.println(">>> nickName:" + nickName + " not existed!!!");
         }
+        
+        //send message to client
+        serial = new Serial();
+        payload = new Payload();
+        payload.type = 7;
+        payload.nickName = this.nickName;
+        payload.msg = msg;
+        msg = serial.serialize(payload);
+        ipAddress = InetAddress.getByName(tbl.get(nickName).clientIp);
+        send(msg, ipAddress, tbl.get(nickName).clientPort);
+        
+        //wait for ack from client
+        synchronized(thread){
+            thread.wait();
+        }      
     }
 
     public void mainLoop() throws Exception{
