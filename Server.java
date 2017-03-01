@@ -6,11 +6,19 @@ public class Server{
     int port;
     Table globalTbl;
     DatagramSocket serverSocket;
+    HashMap<String, List<MessageNode>> offlineMsgTbl;
+
+    private class MessageNode{
+        String sender;
+        String msg;
+        MessageNode(String s, String m){sender = s; msg = m;}
+    }
 
     public Server(int port) throws Exception{
         this.port = port;
         this.globalTbl = new Table();
         serverSocket = new DatagramSocket(this.port);
+        offlineMsgTbl = new HashMap<String, List<MessageNode>>();
 
         System.out.println("[Server] Hello Server, port:" + port);
     }
@@ -108,12 +116,30 @@ public class Server{
             }
         }
     }
+
+    public void dumpOfflineMsg(){
+        List<MessageNode> messageList;
+        
+        System.out.println("[Server] Dump offline message:");
+
+        for(Map.Entry<String, List<MessageNode>> entry : offlineMsgTbl.entrySet()){
+            System.out.println("[Server] receiver:" + entry.getKey());
+            messageList = entry.getValue();
+            for(MessageNode mg: messageList){
+                System.out.print("[Server] message:" + mg.msg + ", ");
+                System.out.println("sender:" + mg.sender);
+                
+            }
+        }
+    }
     
     public void mainLoop() throws Exception {
         InetAddress ipAddress;
         Payload recPayload, sendPayload;
         String msg;
         Serial serial;
+        List<MessageNode> msgList;
+        MessageNode messageNode;
         
         serial = new Serial();
 
@@ -169,6 +195,19 @@ public class Server{
                     System.out.println("[Server] nickName:" + recPayload.nickName);
                     System.out.println("[Server] msg:" + recPayload.msg);
                     System.out.println("[Server] offlineAccount:" + recPayload.offlineAccount);
+
+                    if(!offlineMsgTbl.containsKey(recPayload.offlineAccount)){
+                        msgList = new ArrayList<MessageNode>();
+                        messageNode = new MessageNode(recPayload.nickName, recPayload.msg);
+                        msgList.add(messageNode);
+                        offlineMsgTbl.put(recPayload.offlineAccount, msgList);
+                    }
+                    else{
+                        messageNode = new MessageNode(recPayload.nickName, recPayload.msg);
+                        offlineMsgTbl.get(recPayload.offlineAccount).add(messageNode);
+                    }
+
+                    dumpOfflineMsg();
 
                     break;
 

@@ -30,7 +30,6 @@ public class Table{
             System.out.print(ci.clientPort + ", ");
             System.out.println(ci.isOnline );
         }
-
     }
 
     public synchronized void insert(String nickName, String ip, int port, int isOnline){
