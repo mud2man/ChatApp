@@ -80,6 +80,24 @@ public class Serial{
                 msg += portStr;
                 break;
             
+            case 9:
+                //encode nickName
+                msg += Integer.toString(payload.nickName.length());
+                msg += ".";
+                msg += payload.nickName;
+
+                //encode message
+                msg += Integer.toString(payload.msg.length());
+                msg += ".";
+                msg += payload.msg;
+                
+                //encode offlineAccount
+                msg += Integer.toString(payload.offlineAccount.length());
+                msg += ".";
+                msg += payload.offlineAccount;
+
+                break;
+            
             default:
                 break;
         }
@@ -196,6 +214,33 @@ public class Serial{
                 System.out.println("[Serial] port:" + payload.port);
                 break;
 
+            case 9:
+                //decode nickName
+                subStr = msg.substring(0, msg.indexOf('.'));
+                msg = msg.substring(msg.indexOf('.') + 1);
+                len = Integer.parseInt(subStr);
+                payload.nickName = msg.substring(0, len);
+                msg = msg.substring(len);
+
+                //decode message
+                subStr = msg.substring(0, msg.indexOf('.'));
+                msg = msg.substring(msg.indexOf('.') + 1);
+                len = Integer.parseInt(subStr);
+                payload.msg = msg.substring(0, len);
+                msg = msg.substring(len);
+                
+                //decode offlineAccount
+                subStr = msg.substring(0, msg.indexOf('.'));
+                msg = msg.substring(msg.indexOf('.') + 1);
+                len = Integer.parseInt(subStr);
+                payload.offlineAccount = msg.substring(0, len);
+                msg = msg.substring(len);
+                
+                System.out.println("[Serial] nickName:" + payload.nickName);
+                System.out.println("[Serial] msg:" + payload.msg);
+                System.out.println("[Serial] offlineAccount:" + payload.offlineAccount);
+                break;
+            
             default:
                 break;
         }

@@ -163,6 +163,14 @@ public class Server{
                     //broadcast updated table 
                     broadcastTable();
                     break;
+                
+                //receive offline message
+                case 9:
+                    System.out.println("[Server] nickName:" + recPayload.nickName);
+                    System.out.println("[Server] msg:" + recPayload.msg);
+                    System.out.println("[Server] offlineAccount:" + recPayload.offlineAccount);
+
+                    break;
 
                 default:
                     break;

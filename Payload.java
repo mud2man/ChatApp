@@ -8,6 +8,7 @@
  * payloadType6: nack from client => type, nickName
  * payloadType7: message from client => type, nickName, message
  * payloadType8: deregister => type, nickName, ip, port
+ * payloadType9: message to server => type, nickName, message, offlineAccount 
  */
 
 import java.util.*;
@@ -19,6 +20,7 @@ public class Payload{
     public int port;
     public String msg;
     public int isOnline;
+    public String offlineAccount;
 
     Payload(){
         type = 0;
@@ -27,5 +29,6 @@ public class Payload{
         port = 0;
         msg = "";
         isOnline = 0;
+        offlineAccount = "";
     }
 }

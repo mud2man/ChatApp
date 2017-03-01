@@ -247,24 +247,37 @@ public class Client{
             return;
         }
         
-        //send message to client
         serial = new Serial();
-        payload = new Payload();
-        payload.type = 7;
-        payload.nickName = this.nickName;
-        payload.msg = msg;
-        msg = serial.serialize(payload);
-        ipAddress = InetAddress.getByName(tbl.get(nickName).clientIp);
-        send(msg, ipAddress, tbl.get(nickName).clientPort);
-        
-        //wait for ack from client
         beforeTime = System.currentTimeMillis();
-        synchronized(thread){
-            thread.wait(500);
-        } 
 
-        if((System.currentTimeMillis() - beforeTime) >= 500){ 
+        //send online message to client
+        if(tbl.get(nickName).isOnline == 1){
+            payload = new Payload();
+            payload.type = 7;
+            payload.nickName = this.nickName;
+            payload.msg = msg;
+            msg = serial.serialize(payload);
+            ipAddress = InetAddress.getByName(tbl.get(nickName).clientIp);
+            send(msg, ipAddress, tbl.get(nickName).clientPort);
+            
+            //wait for ack from client
+            beforeTime = System.currentTimeMillis();
+            synchronized(thread){
+                thread.wait(500);
+            } 
+        } 
+        
+        //send offline message to server
+        if((System.currentTimeMillis() - beforeTime) >= 500 || tbl.get(nickName).isOnline == 0 ){ 
             System.out.println(">>> [No ACK from " + nickName + ", message sent to server.]");
+            payload = new Payload();
+            payload.type = 9;
+            payload.nickName = this.nickName;
+            payload.msg = msg;
+            payload.offlineAccount = nickName;
+            msg = serial.serialize(payload);
+            ipAddress = InetAddress.getByName(this.serverIp);
+            send(msg, ipAddress, this.serverPort);
         }
     }
     
@@ -275,7 +288,7 @@ public class Client{
         String msg;
         long beforeTime;
         
-        //send message to client
+        //send message to server
         ipAddress = InetAddress.getByName("localhost");
         serial = new Serial();
         payload = new Payload();
