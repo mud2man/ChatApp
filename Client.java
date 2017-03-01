@@ -299,11 +299,12 @@ public class Client{
                 System.out.println("[Client] server response tiomeout on " + retry + "-th time");
             }
             else{
-                return ;
+                System.exit(0);
             }
         }
         System.out.println(">>> [Server not responding]");
         System.out.println(">>> [Exiting]");
+        System.exit(0);
     }
 
     public void mainLoop() throws Exception{

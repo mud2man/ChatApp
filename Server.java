@@ -161,7 +161,7 @@ public class Server{
                     send(msg, ipAddress, recPayload.port);
 
                     //broadcast updated table 
-                    //broadcastTable();
+                    broadcastTable();
                     break;
 
                 default:
