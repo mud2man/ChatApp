@@ -232,7 +232,7 @@ public class Client{
             payload = new Payload();
             payload.type = 0;
             payload.nickName = nickName;
-            payload.ip = ipAddress.getHostAddress();
+            payload.ip = InetAddress.getLocalHost().getHostAddress();
             payload.port = this.clientPort;
             payload.isOnline = 1;
             msg = serial.serialize(payload);
@@ -240,7 +240,7 @@ public class Client{
             
             //wait for ack from server
             synchronized(thread){
-                thread.wait(500);
+                thread.wait();
             } 
          
             if((System.currentTimeMillis() - beforeTime) < 500){ 
@@ -323,12 +323,11 @@ public class Client{
         long beforeTime;
         
         //send message to server
-        ipAddress = InetAddress.getByName("localhost");
         serial = new Serial();
         payload = new Payload();
         payload.type = 8;
         payload.nickName = this.nickName;
-        payload.ip = ipAddress.getHostAddress();
+        payload.ip = InetAddress.getLocalHost().getHostAddress();
         payload.port = this.clientPort;
         msg = serial.serialize(payload);
         ipAddress = InetAddress.getByName(this.serverIp);
