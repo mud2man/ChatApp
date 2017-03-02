@@ -82,6 +82,9 @@ public class Client{
                     
                     case 1:
                         //wake up waiting thread
+                        if(recPayload.msg.length() > 0){
+                            System.out.println(">>> " + recPayload.msg);
+                        }
                         try{
                             Thread.sleep(10);
                             synchronized(thread){
@@ -165,6 +168,16 @@ public class Client{
                             }
                         }
                         break;
+                    
+                    case 10:
+                        if(recPayload.nickName.compareTo("server") == 0){
+                            System.out.println(recPayload.msg);
+                        }
+                        else{
+                            System.out.println(recPayload.nickName + ": " + recPayload.msg);
+                        }
+                        System.out.print(">>> " );
+                        break;
 
                     default:
                         break;
@@ -202,35 +215,38 @@ public class Client{
         return payload;
     }
 
-    public void register() throws Exception{
+    public void register(String nickName) throws Exception{
         String msg = "" ;
         InetAddress ipAddress;
         Payload payload;
         Serial serial;
+        long beforeTime;
         
         serial = new Serial();
         msg = "";
         ipAddress = InetAddress.getByName(this.serverIp);
 
-        do{
+        while(true){
             //send register information to server
+            beforeTime = System.currentTimeMillis();
             payload = new Payload();
             payload.type = 0;
-            payload.nickName = this.nickName;
+            payload.nickName = nickName;
             payload.ip = ipAddress.getHostAddress();
             payload.port = this.clientPort;
             payload.isOnline = 1;
             msg = serial.serialize(payload);
-            System.out.println("[Client] register before send:");
             send(msg, ipAddress, this.serverPort);
-            System.out.println("[Client] register after send:");
-         
+            
             //wait for ack from server
-            System.out.println("[Client] register before receive:");
-            payload = receive();
-            System.out.println("[Client] payload.type:" + payload.type);
-            System.out.println(">>> " + payload.msg);
-        }while(payload.type != 1);
+            synchronized(thread){
+                thread.wait(500);
+            } 
+         
+            if((System.currentTimeMillis() - beforeTime) < 500){ 
+                break;
+            }
+        }
     }
     
     public void chat(String nickName, String msg) throws Exception{
@@ -278,6 +294,12 @@ public class Client{
             msg = serial.serialize(payload);
             ipAddress = InetAddress.getByName(this.serverIp);
             send(msg, ipAddress, this.serverPort);
+            
+            //wait for ack from server
+            beforeTime = System.currentTimeMillis();
+            synchronized(thread){
+                thread.wait(500);
+            } 
         }
     }
     
@@ -311,13 +333,9 @@ public class Client{
             if((System.currentTimeMillis() - beforeTime) >= 500){ 
                 System.out.println("[Client] server response tiomeout on " + retry + "-th time");
             }
-            else{
-                System.exit(0);
-            }
         }
         System.out.println(">>> [Server not responding]");
         System.out.println(">>> [Exiting]");
-        System.exit(0);
     }
 
     public void mainLoop() throws Exception{
@@ -325,9 +343,9 @@ public class Client{
         BufferedReader br;
         String command, strLine, msg, nickName; 
 
-        register();
         receiveThread = new ReceiveThread("Receive thread");
         receiveThread.start();
+        register(this.nickName);
         Thread.sleep(100); 
         
         while(true){
@@ -351,6 +369,10 @@ public class Client{
             else if(command.compareTo("dereg") == 0){
                 nickName = strLine;
                 deRegister(nickName);
+            }
+            else if(command.compareTo("reg") == 0){
+                nickName = strLine;
+                register(nickName);
             }
             else{
                 System.err.println("Wrong format !!!");

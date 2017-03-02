@@ -9,6 +9,7 @@
  * payloadType7: message from client => type, nickName, message
  * payloadType8: deregister => type, nickName, ip, port
  * payloadType9: message to server => type, nickName, message, offlineAccount 
+ * payloadType10: message from server => type, nickName, message
  */
 
 import java.util.*;

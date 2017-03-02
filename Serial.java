@@ -51,6 +51,7 @@ public class Serial{
                 break;
 
             case 7:
+            case 10:
                 //encode nickName
                 msg += Integer.toString(payload.nickName.length());
                 msg += ".";
@@ -168,6 +169,7 @@ public class Serial{
                 break;
             
             case 7:
+            case 10:
                 //decode nickName
                 subStr = msg.substring(0, msg.indexOf('.'));
                 msg = msg.substring(msg.indexOf('.') + 1);

@@ -1,6 +1,7 @@
 import java.io.*;
 import java.net.*;
 import java.util.*;
+import java.text.*;
 
 public class Server{
     int port;
@@ -128,19 +129,62 @@ public class Server{
             for(MessageNode mg: messageList){
                 System.out.print("[Server] message:" + mg.msg + ", ");
                 System.out.println("sender:" + mg.sender);
-                
             }
         }
     }
+
+    public void sendOfflineMsg(String nickName) throws Exception {
+        HashMap<String, ClientInfo> tbl;
+        List<MessageNode> messageList;
+        InetAddress ipAddress;
+        Payload sendPayload;
+        String msg;
+        Serial serial;
+        int port;
+
+        tbl = globalTbl.tbl;
+        serial = new Serial();
+        ipAddress = InetAddress.getByName(tbl.get(nickName).clientIp);
+        port = tbl.get(nickName).clientPort;
+
+        if(offlineMsgTbl.containsKey(nickName)){
+            messageList = offlineMsgTbl.get(nickName);
+            if(messageList.size() > 0){
+                sendPayload = new Payload();
+                sendPayload.type = 10;
+                sendPayload.nickName = "server";
+                sendPayload.msg = "[You have messages]";
+                msg = serial.serialize(sendPayload);
+                send(msg, ipAddress, port);
+
+                for(MessageNode msgNode: messageList){
+                    System.out.print("[Server] message:" + msgNode.msg + ", ");
+                    System.out.println("sender:" + msgNode.sender);
+
+                    sendPayload = new Payload();
+                    sendPayload.type = 10;
+                    sendPayload.nickName = msgNode.sender;
+                    sendPayload.msg = msgNode.msg;
+                    msg = serial.serialize(sendPayload);
+                    send(msg, ipAddress, port);
+                }
+            }
+        }  
+    }
     
     public void mainLoop() throws Exception {
+        HashMap<String, ClientInfo> tbl;
         InetAddress ipAddress;
         Payload recPayload, sendPayload;
         String msg;
         Serial serial;
         List<MessageNode> msgList;
         MessageNode messageNode;
+        int port;
+        DateFormat dateFormat;
+        Date date;
         
+        tbl = globalTbl.tbl;
         serial = new Serial();
 
         while(true){
@@ -168,6 +212,9 @@ public class Server{
                     
                     //broadcast updated table 
                     broadcastTable();
+
+                    //send offline message
+                    sendOfflineMsg(recPayload.nickName);
                     break;
 
                 //de-register
@@ -195,20 +242,48 @@ public class Server{
                     System.out.println("[Server] nickName:" + recPayload.nickName);
                     System.out.println("[Server] msg:" + recPayload.msg);
                     System.out.println("[Server] offlineAccount:" + recPayload.offlineAccount);
-
-                    if(!offlineMsgTbl.containsKey(recPayload.offlineAccount)){
-                        msgList = new ArrayList<MessageNode>();
-                        messageNode = new MessageNode(recPayload.nickName, recPayload.msg);
-                        msgList.add(messageNode);
-                        offlineMsgTbl.put(recPayload.offlineAccount, msgList);
+                    
+                    dateFormat = new SimpleDateFormat("yyyy.MM.dd-HH:mm:ss");
+                    date = new Date();
+                    msg = dateFormat.format(date);
+                    msg += " ";
+                    
+                    if(tbl.get(recPayload.offlineAccount).isOnline == 0){
+                        if(!offlineMsgTbl.containsKey(recPayload.offlineAccount)){
+                            msgList = new ArrayList<MessageNode>();
+                            msg += recPayload.msg;
+                            messageNode = new MessageNode(recPayload.nickName, msg);
+                            msgList.add(messageNode);
+                            offlineMsgTbl.put(recPayload.offlineAccount, msgList);
+                        }
+                        else{
+                            msg += recPayload.msg;
+                            messageNode = new MessageNode(recPayload.nickName, msg);
+                            offlineMsgTbl.get(recPayload.offlineAccount).add(messageNode);
+                        }
+                    
+                        //send ack to client
+                        sendPayload = new Payload();
+                        sendPayload.type = 1;
+                        sendPayload.msg = "";
+                        msg = serial.serialize(sendPayload);
+                        ipAddress = InetAddress.getByName(tbl.get(recPayload.nickName).clientIp);
+                        port = tbl.get(recPayload.nickName).clientPort;
+                        send(msg, ipAddress, port);
                     }
                     else{
-                        messageNode = new MessageNode(recPayload.nickName, recPayload.msg);
-                        offlineMsgTbl.get(recPayload.offlineAccount).add(messageNode);
+                        //send ack to client
+                        sendPayload = new Payload();
+                        sendPayload.type = 1;
+                        sendPayload.msg = "[Client " + recPayload.offlineAccount + " exists!!]";
+                        msg = serial.serialize(sendPayload);
+                        ipAddress = InetAddress.getByName(tbl.get(recPayload.nickName).clientIp);
+                        port = tbl.get(recPayload.nickName).clientPort;
+                        send(msg, ipAddress, port);
+                        
+                        //broadcast updated table 
+                        broadcastTable();
                     }
-
-                    dumpOfflineMsg();
-
                     break;
 
                 default:
