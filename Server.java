@@ -227,6 +227,7 @@ public class Server{
                     //System.out.println("[Server] ip:" + recPayload.ip);
                     //System.out.println("[Server] port:" + recPayload.port);
                     globalTbl.offLine(recPayload.nickName);
+                    globalTbl.dumpTable();
                     
                     //send ack to client
                     sendPayload = new Payload();
