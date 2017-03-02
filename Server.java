@@ -270,7 +270,7 @@ public class Server{
                         //send ack to client
                         sendPayload = new Payload();
                         sendPayload.type = 1;
-                        sendPayload.msg = "";
+                        sendPayload.msg = "[Messages received by the server and saved]";
                         msg = serial.serialize(sendPayload);
                         ipAddress = InetAddress.getByName(tbl.get(recPayload.nickName).clientIp);
                         port = tbl.get(recPayload.nickName).clientPort;

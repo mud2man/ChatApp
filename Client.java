@@ -94,6 +94,7 @@ public class Client{
                                 System.out.print(">>> ");
                             }
                         }
+
                         try{
                             Thread.sleep(100);
                             synchronized(thread){
@@ -108,6 +109,17 @@ public class Client{
 
                     case 2:
                         //wake up waiting thread
+                        if(recPayload.msg.length() > 0){
+                            if(isKeyin == true){
+                                System.out.println(">>> " + recPayload.msg);
+                                System.out.print(">>> ");
+                            }
+                            else{
+                                System.out.println(recPayload.msg);
+                                System.out.print(">>> ");
+                            }
+                        }
+
                         try{
                             Thread.sleep(100);
                             synchronized(thread){
@@ -172,6 +184,7 @@ public class Client{
                         sendPayload = new Payload();
                         sendPayload.type = 2;
                         sendPayload.nickName = nickName;
+                        sendPayload.msg = "[Message received by " + nickName + ".]";
                         msg = serial.serialize(sendPayload);
                         tbl = localTbl.tbl;
 

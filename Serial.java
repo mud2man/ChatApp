@@ -50,6 +50,7 @@ public class Serial{
                 msg += payload.msg;
                 break;
 
+            case 2:
             case 7:
             case 10:
                 //encode nickName
@@ -168,6 +169,7 @@ public class Serial{
                 //System.out.println("[Serial] msg:" + payload.msg);
                 break;
             
+            case 2:
             case 7:
             case 10:
                 //decode nickName
