@@ -86,7 +86,7 @@ public class Client{
                             System.out.println(">>> " + recPayload.msg);
                         }
                         try{
-                            Thread.sleep(10);
+                            Thread.sleep(100);
                             synchronized(thread){
                                 System.out.println("[Client] ack receive from server, waken...");
                                 thread.notifyAll();
@@ -100,7 +100,7 @@ public class Client{
                     case 2:
                         //wake up waiting thread
                         try{
-                            Thread.sleep(10);
+                            Thread.sleep(100);
                             synchronized(thread){
                                 System.out.println("[Client] ack receive from client, waken...");
                                 thread.notifyAll();
@@ -332,6 +332,9 @@ public class Client{
 
             if((System.currentTimeMillis() - beforeTime) >= 500){ 
                 System.out.println("[Client] server response tiomeout on " + retry + "-th time");
+            }
+            else{
+                return;
             }
         }
         System.out.println(">>> [Server not responding]");

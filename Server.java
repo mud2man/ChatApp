@@ -141,6 +141,7 @@ public class Server{
         String msg;
         Serial serial;
         int port;
+        Iterator<MessageNode> it;
 
         tbl = globalTbl.tbl;
         serial = new Serial();
@@ -156,8 +157,10 @@ public class Server{
                 sendPayload.msg = "[You have messages]";
                 msg = serial.serialize(sendPayload);
                 send(msg, ipAddress, port);
-
-                for(MessageNode msgNode: messageList){
+            
+                it = messageList.iterator();
+                while (it.hasNext()) {
+                    MessageNode msgNode = it.next();
                     System.out.print("[Server] message:" + msgNode.msg + ", ");
                     System.out.println("sender:" + msgNode.sender);
 
@@ -167,6 +170,7 @@ public class Server{
                     sendPayload.msg = msgNode.msg;
                     msg = serial.serialize(sendPayload);
                     send(msg, ipAddress, port);
+                    it.remove();
                 }
             }
         }  
