@@ -293,13 +293,25 @@ public class Client{
             payload.offlineAccount = nickName;
             msg = serial.serialize(payload);
             ipAddress = InetAddress.getByName(this.serverIp);
-            send(msg, ipAddress, this.serverPort);
             
-            //wait for ack from server
-            beforeTime = System.currentTimeMillis();
-            synchronized(thread){
-                thread.wait(500);
-            } 
+            for(int retry = 1; retry < 6; retry++){
+                beforeTime = System.currentTimeMillis();
+                send(msg, ipAddress, this.serverPort);
+             
+                //wait for ack from server
+                synchronized(thread){
+                    thread.wait(500);
+                } 
+         
+                if((System.currentTimeMillis() - beforeTime) >= 500){ 
+                    System.out.println("[Client] server response tiomeout on " + retry + "-th time");
+                }
+                else{
+                    return;
+                }
+            }
+            System.out.println(">>> [Server not responding]");
+            System.out.println(">>> [Exiting]");
         }
     }
     
