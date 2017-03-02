@@ -421,6 +421,11 @@ public class Client{
             strLine = strLine.substring(strLine.indexOf(' ') + 1);
             
             if(command.compareTo("send") == 0){
+                if(strLine.indexOf(' ') == -1){
+                    System.err.println("Wrong format !!!");
+                    continue;
+                }
+
                 nickName = strLine.substring(0, strLine.indexOf(' '));
                 msg = strLine.substring(strLine.indexOf(' ') + 1);
                 chat(nickName, msg);
