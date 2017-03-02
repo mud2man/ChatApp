@@ -10,6 +10,7 @@ public class Client{
     Table localTbl;
     DatagramSocket clientSocket;
     private Thread thread;
+    boolean isKeyin;
 
     public Client(String nickName, String serverIp, int serverPort, int clientPort) throws Exception{
         this.nickName = nickName;
@@ -18,11 +19,12 @@ public class Client{
         this.clientPort = clientPort;
         this.localTbl = new Table();
         this.clientSocket = new DatagramSocket(this.clientPort);
+        this.isKeyin = false;
 
-        System.out.println("[Client] nickName:" + this.nickName);
-        System.out.println("[Client] serverIp:" + this.serverIp);
-        System.out.println("[Client] serverPort:" + this.serverPort);
-        System.out.println("[Client] clientPort:" + this.clientPort);
+        //System.out.println("[Client] nickName:" + this.nickName);
+        //System.out.println("[Client] serverIp:" + this.serverIp);
+        //System.out.println("[Client] serverPort:" + this.serverPort);
+        //System.out.println("[Client] clientPort:" + this.clientPort);
     }
     
     private class ReceiveThread implements Runnable {
@@ -42,29 +44,29 @@ public class Client{
             String ip;
 
 
-            System.out.println("[Client] Running " +  threadName + " on port:"+ serverPort);
+            //System.out.println("[Client] Running " +  threadName + " on port:"+ serverPort);
             serial = new Serial();
             recPayload = null;
 
             while(true){
                 try{
-                    System.out.println("[Client] wait for packet...");
+                    //System.out.println("[Client] wait for packet...");
                     recPayload = receive();
                 }
                 catch(Exception e){
                     e.printStackTrace();  
                 }
                 
-                System.out.println("type:" + recPayload.type);
+                //System.out.println("type:" + recPayload.type);
                 switch (recPayload.type){
                     case 0:
                         //add table entry
-                        System.out.println("[Client] nickName:" + recPayload.nickName);
-                        System.out.println("[Client] ip:" + recPayload.ip);
-                        System.out.println("[Client] port:" + recPayload.port);
-                        System.out.println("[Client] isOnline:" + recPayload.isOnline);
+                        //System.out.println("[Client] nickName:" + recPayload.nickName);
+                        //System.out.println("[Client] ip:" + recPayload.ip);
+                        //System.out.println("[Client] port:" + recPayload.port);
+                        //System.out.println("[Client] isOnline:" + recPayload.isOnline);
                         localTbl.insert(recPayload.nickName, recPayload.ip, recPayload.port, recPayload.isOnline);
-                        localTbl.dumpTable();
+                        //localTbl.dumpTable();
 
                         //send ack to server
                         sendPayload = new Payload();
@@ -83,12 +85,19 @@ public class Client{
                     case 1:
                         //wake up waiting thread
                         if(recPayload.msg.length() > 0){
-                            System.out.println(">>> " + recPayload.msg);
+                            if(isKeyin == true){
+                                System.out.println(">>> " + recPayload.msg);
+                                System.out.print(">>> ");
+                            }
+                            else{
+                                System.out.println(recPayload.msg);
+                                System.out.print(">>> ");
+                            }
                         }
                         try{
                             Thread.sleep(100);
                             synchronized(thread){
-                                System.out.println("[Client] ack receive from server, waken...");
+                                //System.out.println("[Client] ack receive from server, waken...");
                                 thread.notifyAll();
                             }
                         }
@@ -102,7 +111,7 @@ public class Client{
                         try{
                             Thread.sleep(100);
                             synchronized(thread){
-                                System.out.println("[Client] ack receive from client, waken...");
+                                //System.out.println("[Client] ack receive from client, waken...");
                                 thread.notifyAll();
                             }
                         }
@@ -127,7 +136,7 @@ public class Client{
                         catch(Exception e){
                             e.printStackTrace();  
                         }
-                        System.out.println("[Client] start update table...");
+                        //System.out.println("[Client] start update table...");
                         break;
 
                     case 4:
@@ -144,7 +153,15 @@ public class Client{
                         catch(Exception e){
                             e.printStackTrace();  
                         }
-                        System.out.println(">>> [Client table updated.]");
+                        
+                        if(isKeyin == true){
+                            System.out.println(">>> " + recPayload.msg);
+                            System.out.print(">>> ");
+                        }
+                        else{
+                            System.out.println("[Client table updated.]");
+                            System.out.print(">>> ");
+                        }
                         break;
 
                     case 7:
@@ -209,7 +226,7 @@ public class Client{
         receivePacket = new DatagramPacket(receiveData, receiveData.length);
         clientSocket.receive(receivePacket);
         msg = new String(receivePacket.getData());
-        System.out.println("[Client] msg:" + msg);
+        //System.out.println("[Client] msg:" + msg);
         payload = serial.deserialize(msg);
 
         return payload;
@@ -377,8 +394,10 @@ public class Client{
         
         while(true){
             br = new BufferedReader(new InputStreamReader(System.in));
+            isKeyin = false;
             System.out.print(">>> ");
             strLine = br.readLine();
+            isKeyin = true;
 
             if(strLine.indexOf(' ') == -1){
                 System.err.println("Wrong format !!!");
@@ -395,11 +414,23 @@ public class Client{
             }
             else if(command.compareTo("dereg") == 0){
                 nickName = strLine;
-                deRegister(nickName);
+
+                if(nickName.compareTo(this.nickName) == 0){
+                    deRegister(nickName);
+                }
+                else{
+                    System.err.println("You cannot de-register others");
+                }
             }
             else if(command.compareTo("reg") == 0){
                 nickName = strLine;
-                register(nickName);
+                
+                if(nickName.compareTo(this.nickName) == 0){
+                    register(nickName);
+                }
+                else{
+                    System.err.println("You cannot register others");
+                }
             }
             else{
                 System.err.println("Wrong format !!!");

@@ -102,7 +102,7 @@ public class Serial{
             default:
                 break;
         }
-        System.out.println("[Serial] msg:" + msg);
+        //System.out.println("[Serial] msg:" + msg);
         return msg;
     }
 
@@ -118,7 +118,7 @@ public class Serial{
         subStr = msg.substring(0, len);
         msg = msg.substring(len);
         payload.type = Integer.parseInt(subStr);
-        System.out.println("[Serial] type:" + payload.type);
+        //System.out.println("[Serial] type:" + payload.type);
 
         switch (payload.type){
             case 0:
@@ -151,10 +151,10 @@ public class Serial{
                 subStr = msg.substring(0, len);
                 payload.isOnline = Integer.parseInt(subStr);
 
-                System.out.println("[Serial] nickName:" + payload.nickName);
-                System.out.println("[Serial] ip:" + payload.ip);
-                System.out.println("[Serial] port:" + payload.port);
-                System.out.println("[Serial] isOnline:" + payload.isOnline);
+                //System.out.println("[Serial] nickName:" + payload.nickName);
+                //System.out.println("[Serial] ip:" + payload.ip);
+                //System.out.println("[Serial] port:" + payload.port);
+                //System.out.println("[Serial] isOnline:" + payload.isOnline);
                 break;
 
             case 1:
@@ -165,7 +165,7 @@ public class Serial{
                 payload.msg = msg.substring(0, len);
                 msg = msg.substring(len);
                 
-                System.out.println("[Serial] msg:" + payload.msg);
+                //System.out.println("[Serial] msg:" + payload.msg);
                 break;
             
             case 7:
@@ -184,8 +184,8 @@ public class Serial{
                 payload.msg = msg.substring(0, len);
                 msg = msg.substring(len);
                 
-                System.out.println("[Serial] nickName:" + payload.nickName);
-                System.out.println("[Serial] msg:" + payload.msg);
+                //System.out.println("[Serial] nickName:" + payload.nickName);
+                //System.out.println("[Serial] msg:" + payload.msg);
                 break;
             
             case 8:
@@ -211,9 +211,9 @@ public class Serial{
                 payload.port = Integer.parseInt(subStr);
                 msg = msg.substring(len);
 
-                System.out.println("[Serial] nickName:" + payload.nickName);
-                System.out.println("[Serial] ip:" + payload.ip);
-                System.out.println("[Serial] port:" + payload.port);
+                //System.out.println("[Serial] nickName:" + payload.nickName);
+                //System.out.println("[Serial] ip:" + payload.ip);
+                //System.out.println("[Serial] port:" + payload.port);
                 break;
 
             case 9:
@@ -238,9 +238,9 @@ public class Serial{
                 payload.offlineAccount = msg.substring(0, len);
                 msg = msg.substring(len);
                 
-                System.out.println("[Serial] nickName:" + payload.nickName);
-                System.out.println("[Serial] msg:" + payload.msg);
-                System.out.println("[Serial] offlineAccount:" + payload.offlineAccount);
+                //System.out.println("[Serial] nickName:" + payload.nickName);
+                //System.out.println("[Serial] msg:" + payload.msg);
+                //System.out.println("[Serial] offlineAccount:" + payload.offlineAccount);
                 break;
             
             default:
