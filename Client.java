@@ -338,11 +338,26 @@ public class Client{
         System.out.println(">>> [Exiting]");
     }
 
+    private class ProcessorHook extends Thread {
+        @Override
+        public void run(){
+            System.out.println("Ctl-C handler");
+            System.exit(0);
+            try{
+                deRegister(nickName);
+            }
+            catch(Exception e){
+                e.printStackTrace();  
+            }
+        }
+    }
+
     public void mainLoop() throws Exception{
         ReceiveThread receiveThread;
         BufferedReader br;
         String command, strLine, msg, nickName; 
 
+        Runtime.getRuntime().addShutdownHook(new ProcessorHook()); 
         receiveThread = new ReceiveThread("Receive thread");
         receiveThread.start();
         register(this.nickName);

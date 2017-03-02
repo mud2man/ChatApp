@@ -9,9 +9,6 @@ public class UdpChat{
         Client client;
         Server server;
 
-
-        System.out.println("Hello UdpChat");
-        
         if(args[0].compareTo("-s") == 0){
             server = new Server(Integer.parseInt(args[1]));
             server.mainLoop();
