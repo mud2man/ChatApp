@@ -341,8 +341,6 @@ public class Client{
     private class ProcessorHook extends Thread {
         @Override
         public void run(){
-            System.out.println("Ctl-C handler");
-            System.exit(0);
             try{
                 deRegister(nickName);
             }
