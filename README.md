@@ -31,21 +31,26 @@ Name: Chih-Hung.Lu UNI: cl3519
 
     3.b Case#1 result
         1. terminal#2:
-            namo@csee4119:~/ChatApp$ sh client_test_jordan.sh 
+            namo@csee4119:~/ChatApp$ sh client_test_namo.sh 
             [Welcome, You are registered.]
             >>> [Client table updated.]
             >>> [Client table updated.]
             >>> [Client table updated.]
-            >>> namo: Hi jordan
-            >>> min: Hi jordan
+            >>> send min hi min
+            >>> [Message received by min.]
+            >>> send jordan hi jordan
+            >>> [Message received by jordan.]
+            >>> dereg namo
+            >>> [You are Offline. Bye.]
+            >>> reg namo
+            >>> [Welcome, You are registered.]
             >>> [Client table updated.]
-            >>> send namo are you alive
-            >>> [No ACK from namo, message sent to server.]
-            >>> [Messages received by the server and saved]
-            >>> [Client table updated.]
+            >>> [You have messages]
+            >>> min: 2017.03.03-00:43:46 are you alive
+            >>> jordan: 2017.03.03-00:43:52 are you alive
             >>> ^C[You are Offline. Bye.]
-            >>> 
-        
+            >>>
+
         2. terminal#3:
             namo@csee4119:~/ChatApp$ sh client_test_min.sh 
             [Welcome, You are registered.]
