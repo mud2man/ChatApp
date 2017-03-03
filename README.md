@@ -6,7 +6,7 @@ UNI: cl3519
 
 2. How to run
     2.a server: $: java UdpChat -s <server-port>
-    2.b client: $: java java UdpChat -c <nick-name> <server-ip> <server-port> <client-port>
+    2.b client: $: java UdpChat -c <nick-name> <server-ip> <server-port> <client-port>
 
 3. Algorithms and datas tructure
     3.a Serialize and deserilize
