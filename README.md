@@ -1,4 +1,5 @@
-Name: Chih-Hung.Lu UNI: cl3519
+Name: Chih-Hung.Lu 
+UNI: cl3519
 
 1. How to compile
     1.a $: make
@@ -7,10 +8,29 @@ Name: Chih-Hung.Lu UNI: cl3519
     2.a server: $: java UdpChat -s <server-port>
     2.b client: $: java java UdpChat -c <nick-name> <server-ip> <server-port> <client-port>
 
-3. Algorithms and datastructure
+3. Algorithms and datas tructure
     3.a Serialize and deserilize
+        I use an efficeint way to serialize the message. The serialization format is that character# of message1 + 
+        "." + message1 + character# of message2 + "." + message.... 
+
     3.b Registeration table
-    3,c Protocals
+        I use hashmap as a registeration table. The key is the nickname and the value of table is the object of client information.
+        Of course, the information of client is encapsulate into an object.
+        
+    3.c Protocals
+        The following is the self-defined message type used to communicate between client and server, and also between client and 
+        clent.
+        Type0: add register table entry => type, nickName, ip, port, isOnline 
+        Type1: ack from server => type, message
+        Type2: ack from client => type
+        Type3: start updat table from server => type
+        Type4: finish updat table from server => type
+        Type5: nack from server => type
+        Type6: nack from client => type, nickName
+        Type7: message from client => type, nickName, message
+        Type8: deregister => type, nickName, ip, port
+        Type9: message to server => type, nickName, message, offlineAccount 
+        Type10: message from server => type, nickName, message
 
 4. Test plan
     I have four shell scripts "server_test.sh", "client_test_namo.sh", "client_test_min.sh" and "client_test_jordan.sh", 
