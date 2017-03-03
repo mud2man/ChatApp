@@ -290,6 +290,7 @@ public class Client{
 
         if(!tbl.containsKey(nickName)){
             System.err.println(">>> nickName:" + nickName + " not existed!!!");
+            System.out.print(">>> ");
             return;
         }
         
@@ -342,6 +343,7 @@ public class Client{
             }
             System.out.println(">>> [Server not responding]");
             System.out.println(">>> [Exiting]");
+            System.out.print(">>> ");
         }
     }
     
@@ -380,6 +382,7 @@ public class Client{
         }
         System.out.println(">>> [Server not responding]");
         System.out.println(">>> [Exiting]");
+        System.out.print(">>> ");
     }
 
     private class ProcessorHook extends Thread {
@@ -408,12 +411,12 @@ public class Client{
         while(true){
             br = new BufferedReader(new InputStreamReader(System.in));
             isKeyin = false;
-            System.out.print(">>> ");
             strLine = br.readLine();
             isKeyin = true;
 
             if(strLine.indexOf(' ') == -1){
                 System.err.println("Wrong format !!!");
+                System.out.print(">>> ");
                 continue; 
             }
 
@@ -423,6 +426,7 @@ public class Client{
             if(command.compareTo("send") == 0){
                 if(strLine.indexOf(' ') == -1){
                     System.err.println("Wrong format !!!");
+                    System.out.print(">>> ");
                     continue;
                 }
 
@@ -438,6 +442,7 @@ public class Client{
                 }
                 else{
                     System.err.println("You cannot de-register others");
+                    System.out.print(">>> ");
                 }
             }
             else if(command.compareTo("reg") == 0){
@@ -448,10 +453,12 @@ public class Client{
                 }
                 else{
                     System.err.println("You cannot register others");
+                    System.out.print(">>> ");
                 }
             }
             else{
                 System.err.println("Wrong format !!!");
+                System.out.print(">>> ");
             }
         }
     }
